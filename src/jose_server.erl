@@ -661,9 +661,9 @@ has_cipher(aes_gcm, KeySize) ->
 
 %% @private
 has_block_cipher(Cipher, {Key, PlainText}) ->
-	case catch crypto:block_encrypt(Cipher, Key, PlainText) of
+	case catch crypto:crypto_one_time(Cipher, Key, PlainText,true) of
 		CipherText when is_binary(CipherText) ->
-			case catch crypto:crypto_one_time(Cipher, Key, CipherText,true) of
+			case catch crypto:crypto_one_time(Cipher, Key, CipherText,false) of
 				PlainText ->
 					{true, Cipher};
 				_ ->
@@ -673,7 +673,7 @@ has_block_cipher(Cipher, {Key, PlainText}) ->
 			false
 	end;
 has_block_cipher(Cipher, {Key, IV, PlainText}) ->
-	case catch crypto:block_encrypt(Cipher, Key, IV, PlainText) of
+	case catch crypto:crypto_one_time(Cipher, Key, IV, PlainText,true) of
 		CipherText when is_binary(CipherText) ->
 			case catch crypto:crypto_one_time(Cipher, Key, IV, CipherText, false) of
 				PlainText ->
@@ -685,9 +685,9 @@ has_block_cipher(Cipher, {Key, IV, PlainText}) ->
 			false
 	end;
 has_block_cipher(Cipher, {Key, IV, AAD, PlainText}) ->
-	case catch crypto:block_encrypt(Cipher, Key, IV, {AAD, PlainText}) of
+	case catch crypto:crypto_one_time_aead(Cipher, Key, IV,  PlainText, AAD, true) of
 		{CipherText, CipherTag} when is_binary(CipherText) andalso is_binary(CipherTag) ->
-			case catch crypto:crypto_one_time_aead(Cipher, Key, IV,  CipherText,AAD, CipherTag, true) of
+			case catch crypto:crypto_one_time_aead(Cipher, Key, IV,  CipherText,AAD, CipherTag, false) of
 				PlainText ->
 					{true, Cipher};
 				_ ->
