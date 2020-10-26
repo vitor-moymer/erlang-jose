@@ -624,26 +624,26 @@ pem_entry_enc1(_, _, _) ->
 %% @private
 pem_cipher(Data, {Cipher = "AES-128-CBC", KeyDevParams}, Password) ->
 	{Key, IV} = password_to_key_and_iv(Password, Cipher, KeyDevParams),
-	{true, crypto:block_encrypt(aes_cbc128, Key, IV, jose_jwa_pkcs7:pad(Data))};
+	{true, crypto:crypto_one_time(aes_cbc128, Key, IV, jose_jwa_pkcs7:pad(Data), [{encrypt,true}])};
 pem_cipher(Data, {Cipher = "AES-192-CBC", KeyDevParams}, Password) ->
 	{Key, IV} = password_to_key_and_iv(Password, Cipher, KeyDevParams),
-	{true, crypto:block_encrypt(aes_cbc192, Key, IV, jose_jwa_pkcs7:pad(Data))};
+	{true, crypto:crypto_one_time(aes_cbc192, Key, IV, jose_jwa_pkcs7:pad(Data), [{encrypt,true}])};
 pem_cipher(Data, {Cipher = "AES-256-CBC", KeyDevParams}, Password) ->
 	{Key, IV} = password_to_key_and_iv(Password, Cipher, KeyDevParams),
-	{true, crypto:block_encrypt(aes_cbc256, Key, IV, jose_jwa_pkcs7:pad(Data))};
+	{true, crypto:crypto_one_time(aes_cbc256, Key, IV, jose_jwa_pkcs7:pad(Data), [{encrypt,true}])};
 pem_cipher(_, _, _) ->
 	false.
 
 %% @private
 pem_decipher(Data, {Cipher = "AES-128-CBC", KeyDevParams}, Password) ->
 	{Key, IV} = password_to_key_and_iv(Password, Cipher, KeyDevParams),
-	{true, crypto:block_decrypt(aes_cbc128, Key, IV, Data)};
+	{true, crypto:crypto_one_time(aes_cbc128, Key, IV, Data, [{encrypt,false}])};
 pem_decipher(Data, {Cipher = "AES-192-CBC", KeyDevParams}, Password) ->
 	{Key, IV} = password_to_key_and_iv(Password, Cipher, KeyDevParams),
-	{true, crypto:block_decrypt(aes_cbc192, Key, IV, Data)};
+	{true, crypto:crypto_one_time(aes_cbc192, Key, IV, Data, [{encrypt,false}])};
 pem_decipher(Data, {Cipher = "AES-256-CBC", KeyDevParams}, Password) ->
 	{Key, IV} = password_to_key_and_iv(Password, Cipher, KeyDevParams),
-	{true, crypto:block_decrypt(aes_cbc256, Key, IV, Data)};
+	{true, crypto:crypto_one_time(aes_cbc256, Key, IV, Data, [{encrypt,false}])};
 pem_decipher(_, _, _) ->
 	false.
 
