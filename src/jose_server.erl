@@ -663,7 +663,7 @@ has_cipher(aes_gcm, KeySize) ->
 has_block_cipher(Cipher, {Key, PlainText}) ->
 	case catch crypto:block_encrypt(Cipher, Key, PlainText) of
 		CipherText when is_binary(CipherText) ->
-			case catch crypto:block_decrypt(Cipher, Key, CipherText) of
+			case catch crypto:crypto_one_time(Cipher, Key, CipherText,true) of
 				PlainText ->
 					{true, Cipher};
 				_ ->
@@ -675,7 +675,7 @@ has_block_cipher(Cipher, {Key, PlainText}) ->
 has_block_cipher(Cipher, {Key, IV, PlainText}) ->
 	case catch crypto:block_encrypt(Cipher, Key, IV, PlainText) of
 		CipherText when is_binary(CipherText) ->
-			case catch crypto:block_decrypt(Cipher, Key, IV, CipherText) of
+			case catch crypto:crypto_one_time(Cipher, Key, IV, CipherText, false) of
 				PlainText ->
 					{true, Cipher};
 				_ ->
@@ -687,7 +687,7 @@ has_block_cipher(Cipher, {Key, IV, PlainText}) ->
 has_block_cipher(Cipher, {Key, IV, AAD, PlainText}) ->
 	case catch crypto:block_encrypt(Cipher, Key, IV, {AAD, PlainText}) of
 		{CipherText, CipherTag} when is_binary(CipherText) andalso is_binary(CipherTag) ->
-			case catch crypto:block_decrypt(Cipher, Key, IV, {AAD, CipherText, CipherTag}) of
+			case catch crypto:crypto_one_time_aead(Cipher, Key, IV,  CipherText,AAD, CipherTag, true) of
 				PlainText ->
 					{true, Cipher};
 				_ ->
