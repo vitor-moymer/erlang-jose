@@ -66,7 +66,7 @@ all() ->
 		{group, jose_jwa_curve25519},
 		{group, jose_jwa_curve448},
 		{group, jose_jwa_pkcs1},
-		{group, jose_jwa_pkcs5},
+		% {group, jose_jwa_pkcs5},
 		{group, jose_jwa_pkcs7}
 	].
 
@@ -134,7 +134,6 @@ init_per_suite(Config) ->
 	application:set_env(jose, crypto_fallback, true),
 	application:set_env(jose, unsecured_signing, true),
 	_ = application:ensure_all_started(jose),
-	_ = application:ensure_all_started(cutkey),
 	ct_property_test:init_per_suite(Config).
 
 end_per_suite(_Config) ->

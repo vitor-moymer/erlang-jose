@@ -4,32 +4,30 @@
 
 -include_lib("public_key/include/public_key.hrl").
 
--include_lib("triq/include/triq.hrl").
+-include_lib("proper/include/proper.hrl").
 
--compile(export_all).
+% -compile(export_all).
 
 base64url_binary() ->
 	?LET(Binary,
 		binary(),
-		base64url:encode(Binary)).
+		jose_jwa_base64url:encode(Binary)).
 
 binary_map() ->
 	?LET(List,
 		list({base64url_binary(), base64url_binary()}),
 		maps:from_list(List)).
 
-modulus_size()  -> int(2048, 4096). % int(256, 8192) | pos_integer().
+modulus_size()  -> integer(1024, 1280). % integer(256, 8192) | pos_integer().
 exponent_size() -> return(65537). % pos_integer().
 
 rsa_keypair(ModulusSize) ->
 	?LET(ExponentSize,
 		exponent_size(),
 		begin
-			case cutkey:rsa(ModulusSize, ExponentSize, [{return, key}]) of
-				{ok, PrivateKey=#'RSAPrivateKey'{modulus=Modulus, publicExponent=PublicExponent}} ->
-					{PrivateKey, #'RSAPublicKey'{modulus=Modulus, publicExponent=PublicExponent}};
-				{error, _} ->
-					erlang:error({badarg, [ModulusSize, ExponentSize, [{return, key}]]})
+			case public_key:generate_key({rsa, ModulusSize, ExponentSize}) of
+				PrivateKey=#'RSAPrivateKey'{modulus=Modulus, publicExponent=PublicExponent} ->
+					{PrivateKey, #'RSAPublicKey'{modulus=Modulus, publicExponent=PublicExponent}}
 			end
 		end).
 
@@ -65,7 +63,7 @@ jwk_hmac() ->
 		binary(32),
 		jose_jwk:from_map(#{
 			<<"kty">> => <<"oct">>,
-			<<"k">> => base64url:encode(Key)
+			<<"k">> => jose_jwa_base64url:encode(Key)
 		})).
 
 jwk_rsa() ->

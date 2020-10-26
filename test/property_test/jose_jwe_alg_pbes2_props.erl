@@ -2,14 +2,14 @@
 %% vim: ts=4 sw=4 ft=erlang noet
 -module(jose_jwe_alg_pbes2_props).
 
--include_lib("triq/include/triq.hrl").
+-include_lib("proper/include/proper.hrl").
 
--compile(export_all).
+% -compile(export_all).
 
 base64url_binary() ->
 	?LET(Binary,
 		binary(),
-		base64url:encode(Binary)).
+		jose_jwa_base64url:encode(Binary)).
 
 binary_map() ->
 	?LET(List,
@@ -18,18 +18,23 @@ binary_map() ->
 
 alg() ->
 	oneof([
+		<<"PBES2-HS256+A128GCMKW">>,
+		<<"PBES2-HS384+A192GCMKW">>,
+		<<"PBES2-HS512+A256GCMKW">>,
 		<<"PBES2-HS256+A128KW">>,
 		<<"PBES2-HS384+A192KW">>,
-		<<"PBES2-HS512+A256KW">>
+		<<"PBES2-HS512+A256KW">>,
+		<<"PBES2-HS512+C20PKW">>,
+		<<"PBES2-HS512+XC20PKW">>
 	]).
 
 alg_map() ->
 	?LET({ALG, P2C, P2S},
-		{alg(), int(1, 4096), binary()},
+		{alg(), integer(1, 256), binary()},
 		#{
 			<<"alg">> => ALG,
 			<<"p2c">> => P2C,
-			<<"p2s">> => base64url:encode(P2S)
+			<<"p2s">> => jose_jwa_base64url:encode(P2S)
 		}).
 
 enc() ->
@@ -45,7 +50,7 @@ jwk_jwe_maps() ->
 		begin
 			JWKMap = #{
 				<<"kty">> => <<"oct">>,
-				<<"k">> => base64url:encode(Password)
+				<<"k">> => jose_jwa_base64url:encode(Password)
 			},
 			JWEMap = maps:merge(#{ <<"enc">> => ENC }, ALGMap),
 			{Password, JWKMap, JWEMap}

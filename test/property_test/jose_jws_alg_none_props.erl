@@ -2,14 +2,14 @@
 %% vim: ts=4 sw=4 ft=erlang noet
 -module(jose_jws_alg_none_props).
 
--include_lib("triq/include/triq.hrl").
+-include_lib("proper/include/proper.hrl").
 
--compile(export_all).
+% -compile(export_all).
 
 base64url_binary() ->
 	?LET(Binary,
 		binary(),
-		base64url:encode(Binary)).
+		jose_jwa_base64url:encode(Binary)).
 
 binary_map() ->
 	?LET(List,
@@ -24,7 +24,7 @@ jwk_jws_maps() ->
 		begin
 			JWKMap = #{
 				<<"kty">> => <<"oct">>,
-				<<"k">> => base64url:encode(Key)
+				<<"k">> => jose_jwa_base64url:encode(Key)
 			},
 			JWSMap = #{
 				<<"alg">> => ALG

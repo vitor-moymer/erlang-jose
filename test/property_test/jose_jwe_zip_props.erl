@@ -2,14 +2,14 @@
 %% vim: ts=4 sw=4 ft=erlang noet
 -module(jose_jwe_zip_props).
 
--include_lib("triq/include/triq.hrl").
+-include_lib("proper/include/proper.hrl").
 
--compile(export_all).
+% -compile(export_all).
 
 base64url_binary() ->
 	?LET(Binary,
 		binary(),
-		base64url:encode(Binary)).
+		jose_jwa_base64url:encode(Binary)).
 
 binary_map() ->
 	?LET(List,
@@ -20,7 +20,9 @@ enc() ->
 	oneof([
 		<<"A128GCM">>,
 		<<"A192GCM">>,
-		<<"A256GCM">>
+		<<"A256GCM">>,
+		<<"C20P">>,
+		<<"XC20P">>
 	]).
 
 jwk_jwe_maps() ->
@@ -32,7 +34,7 @@ jwk_jwe_maps() ->
 			{Key, _} = jose_jwe:next_cek(undefined, FakeJWE),
 			JWKMap = #{
 				<<"kty">> => <<"oct">>,
-				<<"k">> => base64url:encode(Key)
+				<<"k">> => jose_jwa_base64url:encode(Key)
 			},
 			JWEMap = #{
 				<<"alg">> => <<"dir">>,

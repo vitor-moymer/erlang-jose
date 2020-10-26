@@ -2,14 +2,14 @@
 %% vim: ts=4 sw=4 ft=erlang noet
 -module(jose_jwe_alg_aes_kw_props).
 
--include_lib("triq/include/triq.hrl").
+-include_lib("proper/include/proper.hrl").
 
--compile(export_all).
+% -compile(export_all).
 
 base64url_binary() ->
 	?LET(Binary,
 		binary(),
-		base64url:encode(Binary)).
+		jose_jwa_base64url:encode(Binary)).
 
 binary_map() ->
 	?LET(List,
@@ -42,7 +42,7 @@ alg_map(256) ->
 aes_gcm_map(#{ <<"alg">> := << "A", _, _, _, "GCMKW" >> }) ->
 	oneof([
 		#{},
-		#{ <<"iv">> => base64url:encode(crypto:strong_rand_bytes(12)), <<"tag">> => base64url:encode(crypto:strong_rand_bytes(8)) }
+		#{ <<"iv">> => jose_jwa_base64url:encode(crypto:strong_rand_bytes(12)), <<"tag">> => jose_jwa_base64url:encode(crypto:strong_rand_bytes(8)) }
 	]);
 aes_gcm_map(_) ->
 	#{}.
@@ -56,7 +56,7 @@ jwk_jwe_maps() ->
 			ENC = list_to_binary("A" ++ integer_to_list(KeySize) ++ "GCM"),
 			JWKMap = #{
 				<<"kty">> => <<"oct">>,
-				<<"k">> => base64url:encode(Key)
+				<<"k">> => jose_jwa_base64url:encode(Key)
 			},
 			JWEMap = maps:merge(#{ <<"enc">> => ENC }, ALGMap),
 			{Key, JWKMap, JWEMap}

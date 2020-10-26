@@ -4,14 +4,14 @@
 
 -include_lib("public_key/include/public_key.hrl").
 
--include_lib("triq/include/triq.hrl").
+-include_lib("proper/include/proper.hrl").
 
--compile(export_all).
+% -compile(export_all).
 
 base64url_binary() ->
 	?LET(Binary,
 		binary(),
-		base64url:encode(Binary)).
+		jose_jwa_base64url:encode(Binary)).
 
 binary_map() ->
 	?LET(List,
@@ -54,6 +54,21 @@ jwk_gen() ->
 		jwk_map(),
 		{Keys, jose_jwk:from_map(AlicePrivateJWKMap)}).
 
+prop_from_der_and_to_der() ->
+	?FORALL({_Keys, AlicePrivateJWK, Password},
+		?LET({{Keys, AlicePrivateJWK}, Bytes},
+			{jwk_gen(), binary()},
+			{Keys, AlicePrivateJWK, jose_jwa_base64url:encode(Bytes)}),
+		begin
+			AlicePrivateDER = element(2, jose_jwk:to_der(AlicePrivateJWK)),
+			EncryptedAlicePrivateDER = element(2, jose_jwk:to_der(Password, AlicePrivateJWK)),
+			AlicePublicJWK = jose_jwk:to_public(AlicePrivateJWK),
+			AlicePublicDER = element(2, jose_jwk:to_der(AlicePublicJWK)),
+			AlicePrivateJWK =:= jose_jwk:from_der(AlicePrivateDER)
+			andalso AlicePrivateJWK =:= jose_jwk:from_der(Password, EncryptedAlicePrivateDER)
+			andalso AlicePublicJWK =:= jose_jwk:from_der(AlicePublicDER)
+		end).
+
 prop_from_map_and_to_map() ->
 	?FORALL({{{AlicePrivateKey, AlicePublicKey}, _}, AlicePrivateJWKMap},
 		?LET({{Keys, JWKMap}, Extras},
@@ -75,12 +90,15 @@ prop_from_pem_and_to_pem() ->
 	?FORALL({_Keys, AlicePrivateJWK, Password},
 		?LET({{Keys, AlicePrivateJWK}, Bytes},
 			{jwk_gen(), binary()},
-			{Keys, AlicePrivateJWK, base64url:encode(Bytes)}),
+			{Keys, AlicePrivateJWK, jose_jwa_base64url:encode(Bytes)}),
 		begin
 			AlicePrivatePEM = element(2, jose_jwk:to_pem(AlicePrivateJWK)),
 			EncryptedAlicePrivatePEM = element(2, jose_jwk:to_pem(Password, AlicePrivateJWK)),
+			AlicePublicJWK = jose_jwk:to_public(AlicePrivateJWK),
+			AlicePublicPEM = element(2, jose_jwk:to_pem(AlicePublicJWK)),
 			AlicePrivateJWK =:= jose_jwk:from_pem(AlicePrivatePEM)
 			andalso AlicePrivateJWK =:= jose_jwk:from_pem(Password, EncryptedAlicePrivatePEM)
+			andalso AlicePublicJWK =:= jose_jwk:from_pem(AlicePublicPEM)
 		end).
 
 prop_box_encrypt_and_box_decrypt() ->
@@ -89,9 +107,9 @@ prop_box_encrypt_and_box_decrypt() ->
 		begin
 			BobPrivateJWK = jose_jwk:from_key(BobPrivateKey),
 			BobPublicJWK = jose_jwk:from_key(BobPublicKey),
-			Encrypted = jose_jwk:box_encrypt(PlainText, BobPublicJWK, AlicePrivateJWK),
+			Encrypted = jose_jwk:box_encrypt_ecdh_es(PlainText, BobPublicJWK, AlicePrivateJWK),
 			CompactEncrypted = jose_jwe:compact(Encrypted),
-			Decrypted = {_, JWE} = jose_jwk:box_decrypt(Encrypted, BobPrivateJWK),
+			Decrypted = {_, JWE} = jose_jwk:box_decrypt_ecdh_es(Encrypted, BobPrivateJWK),
 			{PlainText, JWE} =:= Decrypted
 			andalso {PlainText, JWE} =:= jose_jwk:block_decrypt(CompactEncrypted, BobPrivateJWK)
 		end).

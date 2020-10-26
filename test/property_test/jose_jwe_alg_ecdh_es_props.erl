@@ -4,14 +4,14 @@
 
 -include_lib("public_key/include/public_key.hrl").
 
--include_lib("triq/include/triq.hrl").
+-include_lib("proper/include/proper.hrl").
 
--compile(export_all).
+% -compile(export_all).
 
 base64url_binary() ->
 	?LET(Binary,
 		binary(),
-		base64url:encode(Binary)).
+		jose_jwa_base64url:encode(Binary)).
 
 binary_map() ->
 	?LET(List,
@@ -21,9 +21,14 @@ binary_map() ->
 alg() ->
 	oneof([
 		<<"ECDH-ES">>,
+		<<"ECDH-ES+A128GCMKW">>,
+		<<"ECDH-ES+A192GCMKW">>,
+		<<"ECDH-ES+A256GCMKW">>,
 		<<"ECDH-ES+A128KW">>,
 		<<"ECDH-ES+A192KW">>,
-		<<"ECDH-ES+A256KW">>
+		<<"ECDH-ES+A256KW">>,
+		<<"ECDH-ES+C20PKW">>,
+		<<"ECDH-ES+XC20PKW">>
 	]).
 
 alg_map() ->
@@ -31,15 +36,17 @@ alg_map() ->
 		{alg(), binary(), binary()},
 		#{
 			<<"alg">> => ALG,
-			<<"apu">> => base64url:encode(APU),
-			<<"apv">> => base64url:encode(APV)
+			<<"apu">> => jose_jwa_base64url:encode(APU),
+			<<"apv">> => jose_jwa_base64url:encode(APV)
 		}).
 
 ec_curve() ->
 	oneof([
 		secp256r1,
 		secp384r1,
-		secp521r1
+		secp521r1,
+		x25519,
+		x448
 	]).
 
 % ec_curve() ->
@@ -62,6 +69,16 @@ ec_curve() ->
 % 		ec_curve(),
 % 		ec_keypair(CurveId)).
 
+ec_keypair(x25519) ->
+	SecretJWK = jose_jwk:generate_key({okp, 'X25519'}),
+	{_, SecretKey} = jose_jwk:to_key(SecretJWK),
+	{_, PublicKey} = jose_jwk:to_public_key(SecretJWK),
+	{SecretKey, PublicKey};
+ec_keypair(x448) ->
+	SecretJWK = jose_jwk:generate_key({okp, 'X448'}),
+	{_, SecretKey} = jose_jwk:to_key(SecretJWK),
+	{_, PublicKey} = jose_jwk:to_public_key(SecretJWK),
+	{SecretKey, PublicKey};
 ec_keypair(CurveId) ->
 	ECPrivateKey = #'ECPrivateKey'{parameters=ECParameters, publicKey=Octets0} = public_key:generate_key({namedCurve, pubkey_cert_records:namedCurves(CurveId)}),
 	Octets = case Octets0 of
@@ -78,7 +95,9 @@ enc() ->
 	oneof([
 		<<"A128GCM">>,
 		<<"A192GCM">>,
-		<<"A256GCM">>
+		<<"A256GCM">>,
+		<<"C20P">>,
+		<<"XC20P">>
 	]).
 
 jwk_jwe_maps() ->

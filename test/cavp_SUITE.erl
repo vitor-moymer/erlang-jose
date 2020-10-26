@@ -736,41 +736,41 @@ init_per_group(G='nist-800-56A', Config) ->
 			<<86,170,141,234,248,35,109,32,92,34,40,205,113,167,16,26>>},
 		%% See [https://bitbucket.org/b_c/jose4j/src/cb968fdb10bdef6ecedf279b030f9b3af59f5e8e/src/test/java/org/jose4j/jwe/kdf/ConcatKeyDerivationFunctionTest.java]
 		{sha256,
-			base64url:decode(<<"Sq8rGLm4rEtzScmnSsY5r1n-AqBl_iBU8FxN80Uc0S0">>),
+			jose_jwa_base64url:decode(<<"Sq8rGLm4rEtzScmnSsY5r1n-AqBl_iBU8FxN80Uc0S0">>),
 			{<<"A256CBC-HS512">>,
 				<<>>,
 				<<>>,
 				<< 0, 0, 2, 0 >>,
 				<<>>},
 			512,
-			base64url:decode(<<"pgs50IOZ6BxfqvTSie4t9OjWxGr4whiHo1v9Dti93CRiJE2PP60FojLatVVrcjg3BxpuFjnlQxL97GOwAfcwLA">>)},
+			jose_jwa_base64url:decode(<<"pgs50IOZ6BxfqvTSie4t9OjWxGr4whiHo1v9Dti93CRiJE2PP60FojLatVVrcjg3BxpuFjnlQxL97GOwAfcwLA">>)},
 		{sha256,
-			base64url:decode(<<"LfkHot2nGTVlmfxbgxQfMg">>),
+			jose_jwa_base64url:decode(<<"LfkHot2nGTVlmfxbgxQfMg">>),
 			{<<"A128CBC-HS256">>,
 				<<>>,
 				<<>>,
 				<< 0, 0, 1, 0 >>,
 				<<>>},
 			256,
-			base64url:decode(<<"vphyobtvExGXF7TaOvAkx6CCjHQNYamP2ET8xkhTu-0">>)},
+			jose_jwa_base64url:decode(<<"vphyobtvExGXF7TaOvAkx6CCjHQNYamP2ET8xkhTu-0">>)},
 		{sha256,
-			base64url:decode(<<"KSDnQpf2iurUsAbcuI4YH-FKfk2gecN6cWHTYlBzrd8">>),
+			jose_jwa_base64url:decode(<<"KSDnQpf2iurUsAbcuI4YH-FKfk2gecN6cWHTYlBzrd8">>),
 			{<<"meh">>,
 				<<"Alice">>,
 				<<"Bob">>,
 				<< 0, 0, 4, 0 >>,
 				<<>>},
 			1024,
-			base64url:decode(<<"yRbmmZJpxv3H1aq3FgzESa453frljIaeMz6pt5rQZ4Q5Hs-4RYoFRXFh_qBsbTjlsj8JxIYTWj-cp5LKtgi1fBRsf_5yTEcLDv4pKH2fNxjbEOKuVVDWA1_Qv2IkEC0_QSi3lSSELcJaNX-hDG8occ7oQv-w8lg6lLJjg58kOes">>)},
+			jose_jwa_base64url:decode(<<"yRbmmZJpxv3H1aq3FgzESa453frljIaeMz6pt5rQZ4Q5Hs-4RYoFRXFh_qBsbTjlsj8JxIYTWj-cp5LKtgi1fBRsf_5yTEcLDv4pKH2fNxjbEOKuVVDWA1_Qv2IkEC0_QSi3lSSELcJaNX-hDG8occ7oQv-w8lg6lLJjg58kOes">>)},
 		{sha256,
-			base64url:decode(<<"zp9Hot2noTVlmfxbkXqfn1">>),
+			jose_jwa_base64url:decode(<<"zp9Hot2noTVlmfxbkXqfn1">>),
 			{<<"A192CBC-HS384">>,
 				<<>>,
 				<<>>,
 				<< 0, 0, 1, 128 >>,
 				<<>>},
 			384,
-			base64url:decode(<<"SNOvl6h5iSYWJ_EhlnvK8o6om9iyR8HkKMQtQYGkYKkVY0HFMleoUm-H6-kLz8sW">>)}
+			jose_jwa_base64url:decode(<<"SNOvl6h5iSYWJ_EhlnvK8o6om9iyR8HkKMQtQYGkYKkVY0HFMleoUm-H6-kLz8sW">>)}
 	],
 	[{vectors, Vectors} | jose_ct:start(G, Config)];
 init_per_group(G='pkcs-1v2-1-vec', Config) ->
@@ -1061,7 +1061,7 @@ data_setup(Config) ->
 data_setup(F = "186-3rsatestvectors.zip", Config) ->
 	Zip = archive_file(F, Config),
 	Dir = data_file("186-3rsatestvectors", Config),
-	URL = "http://csrc.nist.gov/groups/STM/cavp/documents/dss/186-3rsatestvectors.zip",
+	URL = "https://github.com/potatosalad/test-vector-archive/raw/1.0.0/archive/186-3rsatestvectors.zip",
 	ok = data_setup(Zip, Dir, URL),
 	Filter = fun
 		(#zip_file{name = "SigGenPSS_186-3.txt"}) ->
@@ -1076,7 +1076,7 @@ data_setup(F = "186-3rsatestvectors.zip", Config) ->
 data_setup(F = "aesmmt.zip", Config) ->
 	Zip = archive_file(F, Config),
 	Dir = data_file("aesmmt", Config),
-	URL = "http://csrc.nist.gov/groups/STM/cavp/documents/aes/aesmmt.zip",
+	URL = "https://github.com/potatosalad/test-vector-archive/raw/1.0.0/archive/aesmmt.zip",
 	ok = data_setup(Zip, Dir, URL),
 	Filter = fun
 		(#zip_file{name = "CBC" ++ _}) ->
@@ -1091,7 +1091,7 @@ data_setup(F = "aesmmt.zip", Config) ->
 data_setup(F = "gcmtestvectors.zip", Config) ->
 	Zip = archive_file(F, Config),
 	Dir = data_file("gcmtestvectors", Config),
-	URL = "http://csrc.nist.gov/groups/STM/cavp/documents/mac/gcmtestvectors.zip",
+	URL = "https://github.com/potatosalad/test-vector-archive/raw/1.0.0/archive/gcmtestvectors.zip",
 	ok = data_setup(Zip, Dir, URL),
 	case filelib:is_file(filename:join([Dir, "gcmDecrypt128.rsp"])) of
 		true ->
@@ -1109,7 +1109,7 @@ data_setup(F = "gcmtestvectors.zip", Config) ->
 data_setup(F = "KAT_AES.zip", Config) ->
 	Zip = archive_file(F, Config),
 	Dir = data_file("KAT_AES", Config),
-	URL = "http://csrc.nist.gov/groups/STM/cavp/documents/aes/KAT_AES.zip",
+	URL = "https://github.com/potatosalad/test-vector-archive/raw/1.0.0/archive/KAT_AES.zip",
 	ok = data_setup(Zip, Dir, URL),
 	Filter = fun
 		(#zip_file{name = "CBC" ++ _}) ->
@@ -1139,7 +1139,7 @@ data_setup(F = "keccaktestvectors", Config) ->
 data_setup(F = "kwtestvectors.zip", Config) ->
 	Zip = archive_file(F, Config),
 	Dir = data_file("kwtestvectors", Config),
-	URL = "http://csrc.nist.gov/groups/STM/cavp/documents/mac/kwtestvectors.zip",
+	URL = "https://github.com/potatosalad/test-vector-archive/raw/1.0.0/archive/kwtestvectors.zip",
 	ok = data_setup(Zip, Dir, URL),
 	Filter = fun
 		(#zip_file{name = "KW_" ++ Name}) ->
@@ -1157,7 +1157,7 @@ data_setup(F = "kwtestvectors.zip", Config) ->
 data_setup(F = "pkcs-1v2-1-vec.zip", Config) ->
 	Zip = archive_file(F, Config),
 	Dir = data_file("pkcs-1v2-1-vec", Config),
-	URL = "ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1/pkcs-1v2-1-vec.zip",
+	URL = "https://github.com/potatosalad/test-vector-archive/raw/1.0.0/archive/pkcs-1v2-1-vec.zip",
 	ok = data_setup(Zip, Dir, URL),
 	Filter = fun
 		(#zip_file{name = "oaep-vect.txt"}) ->
@@ -1506,8 +1506,8 @@ fips_aes_gcm_encrypt_and_decrypt([
 			andalso bit_size(CT) =:= PTlen
 			andalso bit_size(AAD) =:= AADlen
 			andalso bit_size(Tag) =:= Taglen ->
-	case crypto:rand_uniform(0, ?config(one_in, Config)) of
-		0 ->
+	case rand:uniform(?config(one_in, Config)) of
+		1 ->
 			case jose_jwa_aes:block_decrypt(Cipher, Key, IV, {AAD, CT, Tag}) of
 				error ->
 					fips_aes_gcm_encrypt_and_decrypt(Vectors, {Cipher, decrypt, {Keylen, IVlen, PTlen, AADlen, Taglen, << Counts/binary, (integer_to_binary(Count))/binary, "..." >>}}, Config);
@@ -1534,8 +1534,8 @@ fips_aes_gcm_encrypt_and_decrypt([
 			andalso bit_size(AAD) =:= AADlen
 			andalso bit_size(Tag) =:= Taglen
 			andalso bit_size(PT) =:= PTlen ->
-	case crypto:rand_uniform(0, ?config(one_in, Config)) of
-		0 ->
+	case rand:uniform(?config(one_in, Config)) of
+		1 ->
 			case jose_jwa_aes:block_decrypt(Cipher, Key, IV, {AAD, CT, Tag}) of
 				PT ->
 					fips_aes_gcm_encrypt_and_decrypt(Vectors, {Cipher, decrypt, {Keylen, IVlen, PTlen, AADlen, Taglen, << Counts/binary, (integer_to_binary(Count))/binary, "..." >>}}, Config);
@@ -1563,8 +1563,8 @@ fips_aes_gcm_encrypt_and_decrypt([
 			andalso bit_size(AAD) =:= AADlen
 			andalso bit_size(CT) =:= PTlen
 			andalso bit_size(Tag) =:= Taglen ->
-	case crypto:rand_uniform(0, ?config(one_in, Config)) of
-		0 ->
+	case rand:uniform(?config(one_in, Config)) of
+		1 ->
 			case jose_jwa_aes:block_encrypt(Cipher, Key, IV, {AAD, PT}) of
 				{CT, << Tag:Taglen/bitstring, _/bitstring >>} ->
 					fips_aes_gcm_encrypt_and_decrypt(Vectors, {Cipher, encrypt, {Keylen, IVlen, PTlen, AADlen, Taglen, << Counts/binary, (integer_to_binary(Count))/binary, "..." >>}}, Config);
@@ -1616,8 +1616,8 @@ fips_aeskw_unwrap([
 			when is_integer(Len)
 			andalso bit_size(K) =:= Bits
 			andalso bit_size(P) =:= Len ->
-	case crypto:rand_uniform(0, ?config(one_in, Config)) of
-		0 ->
+	case rand:uniform(?config(one_in, Config)) of
+		1 ->
 			case jose_jwa_aes_kw:unwrap(C, K) of
 				P ->
 					fips_aeskw_unwrap(Vectors, {Bits, Len}, Config);
@@ -1637,8 +1637,8 @@ fips_aeskw_unwrap([
 		], {Bits, Len}, Config)
 			when is_integer(Len)
 			andalso bit_size(K) =:= Bits ->
-	case crypto:rand_uniform(0, ?config(one_in, Config)) of
-		0 ->
+	case rand:uniform(?config(one_in, Config)) of
+		1 ->
 			try jose_jwa_aes_kw:unwrap(C, K) of
 				Other ->
 					io:format("\t\tCOUNT = ~w", [Count]),
@@ -1676,8 +1676,8 @@ fips_aeskw_wrap([
 			when is_integer(Len)
 			andalso bit_size(K) =:= Bits
 			andalso bit_size(P) =:= Len ->
-	case crypto:rand_uniform(0, ?config(one_in, Config)) of
-		0 ->
+	case rand:uniform(?config(one_in, Config)) of
+		1 ->
 			case jose_jwa_aes_kw:wrap(P, K) of
 				C ->
 					fips_aeskw_wrap(Vectors, {Bits, Len}, Config);

@@ -2,14 +2,14 @@
 %% vim: ts=4 sw=4 ft=erlang noet
 -module(jose_jwk_kty_oct_props).
 
--include_lib("triq/include/triq.hrl").
+-include_lib("proper/include/proper.hrl").
 
--compile(export_all).
+% -compile(export_all).
 
 base64url_binary() ->
 	?LET(Binary,
 		binary(),
-		base64url:encode(Binary)).
+		jose_jwa_base64url:encode(Binary)).
 
 binary_map() ->
 	?LET(List,
@@ -22,7 +22,7 @@ jwk_map() ->
 		begin
 			JWKMap = #{
 				<<"kty">> => <<"oct">>,
-				<<"k">> => base64url:encode(Key)
+				<<"k">> => jose_jwa_base64url:encode(Key)
 			},
 			{Key, JWKMap}
 		end).
@@ -33,7 +33,7 @@ jwk_map(KeySize) ->
 		begin
 			JWKMap = #{
 				<<"kty">> => <<"oct">>,
-				<<"k">> => base64url:encode(Key)
+				<<"k">> => jose_jwa_base64url:encode(Key)
 			},
 			{Key, JWKMap}
 		end).
@@ -50,11 +50,16 @@ prop_from_map_and_to_map() ->
 			{Key, maps:merge(Extras, JWKMap)}),
 		begin
 			JWK = jose_jwk:from_map(JWKMap),
-			PublicJWK = jose_jwk:to_public(JWK),
-			PublicThumbprint = jose_jwk:thumbprint(PublicJWK),
+			Error =
+				try
+					jose_jwk:to_public(JWK)
+				catch error:Reason:_ ->
+					Reason
+				end,
+			PublicThumbprint = jose_jwk:thumbprint(JWK),
 			JWKMap =:= element(2, jose_jwk:to_map(JWK))
 			andalso Key =:= element(2, jose_jwk:to_key(JWK))
-			andalso JWKMap =:= element(2, jose_jwk:to_public_map(JWK))
+			andalso {not_supported, [to_public_map]} =:= Error
 			andalso PublicThumbprint =:= jose_jwk:thumbprint(JWK)
 		end).
 

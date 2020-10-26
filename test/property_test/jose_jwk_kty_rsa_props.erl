@@ -4,32 +4,30 @@
 
 -include_lib("public_key/include/public_key.hrl").
 
--include_lib("triq/include/triq.hrl").
+-include_lib("proper/include/proper.hrl").
 
--compile(export_all).
+% -compile(export_all).
 
 base64url_binary() ->
 	?LET(Binary,
 		binary(),
-		base64url:encode(Binary)).
+		jose_jwa_base64url:encode(Binary)).
 
 binary_map() ->
 	?LET(List,
 		list({base64url_binary(), base64url_binary()}),
 		maps:from_list(List)).
 
-modulus_size()  -> int(1024, 2048). % int(256, 8192) | pos_integer().
+modulus_size()  -> integer(1024, 1280). % integer(256, 8192) | pos_integer().
 exponent_size() -> return(65537).  % pos_integer().
 
 rsa_keypair(ModulusSize) ->
 	?LET(ExponentSize,
 		exponent_size(),
 		begin
-			case cutkey:rsa(ModulusSize, ExponentSize, [{return, key}]) of
-				{ok, PrivateKey=#'RSAPrivateKey'{modulus=Modulus, publicExponent=PublicExponent}} ->
-					{PrivateKey, #'RSAPublicKey'{modulus=Modulus, publicExponent=PublicExponent}};
-				{error, _} ->
-					erlang:error({badarg, [ModulusSize, ExponentSize, [{return, key}]]})
+			case public_key:generate_key({rsa, ModulusSize, ExponentSize}) of
+				PrivateKey=#'RSAPrivateKey'{modulus=Modulus, publicExponent=PublicExponent} ->
+					{PrivateKey, #'RSAPublicKey'{modulus=Modulus, publicExponent=PublicExponent}}
 			end
 		end).
 
@@ -81,6 +79,21 @@ prop_convert_sfm_to_crt() ->
 			andalso ThumbprintCRT =:= ThumbprintSFM
 		end).
 
+prop_from_der_and_to_der() ->
+	?FORALL({{_, PublicKey}, PrivateJWK, Password},
+		?LET({{Keys, PrivateJWK}, Bytes},
+			{jwk_gen(), binary()},
+			{Keys, PrivateJWK, jose_jwa_base64url:encode(Bytes)}),
+		begin
+			PublicJWK = jose_jwk:from_key(PublicKey),
+			PublicDER = element(2, jose_jwk:to_der(PublicJWK)),
+			PrivateDER = element(2, jose_jwk:to_der(PrivateJWK)),
+			EncryptedPrivateDER = element(2, jose_jwk:to_der(Password, PrivateJWK)),
+			PrivateJWK =:= jose_jwk:from_der(PrivateDER)
+			andalso PrivateJWK =:= jose_jwk:from_der(Password, EncryptedPrivateDER)
+			andalso PublicJWK =:= jose_jwk:from_der(PublicDER)
+		end).
+
 prop_from_map_and_to_map() ->
 	?FORALL({{PrivateKey, PublicKey}, PrivateJWKMap},
 		?LET({{Keys, JWKMap}, Extras},
@@ -102,7 +115,7 @@ prop_from_pem_and_to_pem() ->
 	?FORALL({{_, PublicKey}, PrivateJWK, Password},
 		?LET({{Keys, PrivateJWK}, Bytes},
 			{jwk_gen(), binary()},
-			{Keys, PrivateJWK, base64url:encode(Bytes)}),
+			{Keys, PrivateJWK, jose_jwa_base64url:encode(Bytes)}),
 		begin
 			PublicJWK = jose_jwk:from_key(PublicKey),
 			PublicPEM = element(2, jose_jwk:to_pem(PublicJWK)),
